@@ -32,6 +32,12 @@ import oscope
 import os, pathlib, sys
 import kivy.resources as kivy_resources
 
+import toml
+from pathlib import Path
+
+pyproject = toml.loads(Path("pyproject.toml").read_text())
+__version__ = pyproject["project"]["version"]
+
 if getattr(sys, 'frozen', False):
     kivy_resources.resource_add_path(sys._MEIPASS)
     kivy_resources.resource_add_path(os.path.join(sys._MEIPASS, 'resources'))
@@ -3313,7 +3319,7 @@ class MainApp(App):
 
     def build(self):
         self.root = RootWidget()
-        self.title = f"Whoa-Scope"
+        self.title = f"Whoa-Scope v{__version__}"
         self.root.current = 'scope'
         if self.dev.connected:
             self.root.scope.scope_plot.update_job = Clock.schedule_once(self.root.scope.scope_plot.update_scope_plot, 0.1)
