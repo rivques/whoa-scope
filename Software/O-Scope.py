@@ -1,6 +1,8 @@
 
 from kivy.config import Config
 Config.set('kivy', 'exit_on_escape', '0')
+Config.set('graphics', 'width', 1200)
+Config.set('graphics', 'height', 800)
 
 from kvplot import Plot
 from kivy.app import App
@@ -3308,6 +3310,7 @@ class MainApp(App):
 
     def build(self):
         self.root = RootWidget()
+        self.title = f"Whoa-Scope"
         self.root.current = 'scope'
         if self.dev.connected:
             self.root.scope.scope_plot.update_job = Clock.schedule_once(self.root.scope.scope_plot.update_scope_plot, 0.1)
