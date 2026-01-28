@@ -64,6 +64,189 @@ else:
 __version__ = pyproject["project"]["version"]
 
 
+class TooltipBehavior:
+    """
+    Mixin class that provides tooltip functionality for widgets.
+    
+    When the mouse hovers over a widget with this behavior for a short delay,
+    a tooltip with descriptive text will appear near the cursor.
+    
+    Usage:
+        class MyButton(TooltipBehavior, Button):
+            pass
+        
+        # In KV:
+        MyButton:
+            tooltip_text: 'Click to do something'
+    """
+    
+    # Tooltip text to display
+    tooltip_text = StringProperty('')
+    
+    # Delay before showing tooltip (in seconds)
+    tooltip_delay = NumericProperty(0.5)
+    
+    # Internal references
+    _tooltip_widget = None
+    _tooltip_show_event = None
+    _is_hovering = False
+    
+    def __init__(self, **kwargs):
+        super(TooltipBehavior, self).__init__(**kwargs)
+        # Bind to window mouse position
+        Window.bind(mouse_pos=self._on_mouse_pos)
+    
+    def _on_mouse_pos(self, window, pos):
+        """Track mouse position to detect hover state."""
+        if not self.get_root_window():
+            return
+        
+        # Check if mouse is over this widget
+        is_over = self.collide_point(*self.to_widget(*pos))
+        
+        if is_over and not self._is_hovering:
+            # Mouse just entered the widget
+            self._is_hovering = True
+            self._schedule_tooltip_show()
+        elif not is_over and self._is_hovering:
+            # Mouse just left the widget
+            self._is_hovering = False
+            self._cancel_tooltip()
+            self._hide_tooltip()
+    
+    def _schedule_tooltip_show(self):
+        """Schedule the tooltip to be shown after a delay."""
+        self._cancel_tooltip()
+        if self.tooltip_text:
+            self._tooltip_show_event = Clock.schedule_once(
+                self._show_tooltip, settings_manager.tooltip_delay
+            )
+    
+    def _cancel_tooltip(self):
+        """Cancel any scheduled tooltip show."""
+        if self._tooltip_show_event:
+            self._tooltip_show_event.cancel()
+            self._tooltip_show_event = None
+    
+    def _show_tooltip(self, dt):
+        """Display the tooltip widget."""
+        if not self.tooltip_text or not self._is_hovering:
+            return
+        
+        # Hide any existing tooltip
+        self._hide_tooltip()
+        
+        # Get theme colors
+        theme = settings_manager.get_current_theme()
+        bg_color = theme.get('tooltip_background', [0.2, 0.2, 0.2, 0.95])
+        text_color = theme.get('tooltip_text_color', [1.0, 1.0, 1.0, 1.0])
+        
+        # Create tooltip label
+        tooltip = TooltipLabel(
+            text=self.tooltip_text,
+            bg_color=bg_color,
+            text_color=text_color
+        )
+        
+        # Position the tooltip near the mouse cursor
+        mouse_pos = Window.mouse_pos
+        
+        # Add to window
+        Window.add_widget(tooltip)
+        
+        # Calculate position after the widget has been added (so size is computed)
+        # Position above and to the right of cursor, but keep within window bounds
+        x = mouse_pos[0] + 10
+        y = mouse_pos[1] + 10
+        
+        # Schedule position update after size is calculated
+        def update_pos(dt):
+            # Keep tooltip within window bounds
+            if x + tooltip.width > Window.width:
+                tooltip.x = Window.width - tooltip.width - 5
+            else:
+                tooltip.x = x
+            
+            if y + tooltip.height > Window.height:
+                tooltip.y = mouse_pos[1] - tooltip.height - 10
+            else:
+                tooltip.y = y
+        
+        tooltip.x = x
+        tooltip.y = y
+        Clock.schedule_once(update_pos, 0)
+        
+        self._tooltip_widget = tooltip
+    
+    def _hide_tooltip(self):
+        """Hide and remove the tooltip widget."""
+        if self._tooltip_widget:
+            try:
+                Window.remove_widget(self._tooltip_widget)
+            except:
+                pass
+            self._tooltip_widget = None
+    
+    def on_disabled(self, instance, value):
+        """Hide tooltip when widget is disabled."""
+        if hasattr(super(), 'on_disabled'):
+            super().on_disabled(instance, value)
+        if value:
+            self._cancel_tooltip()
+            self._hide_tooltip()
+
+
+class TooltipLabel(Label):
+    """
+    A styled label widget used to display tooltip text.
+    Automatically sizes to fit content and has themed background.
+    """
+    
+    bg_color = ListProperty([0.2, 0.2, 0.2, 0.95])
+    text_color = ListProperty([1.0, 1.0, 1.0, 1.0])
+    
+    def __init__(self, **kwargs):
+        # Extract our custom properties before passing to super
+        bg = kwargs.pop('bg_color', [0.2, 0.2, 0.2, 0.95])
+        tc = kwargs.pop('text_color', [1.0, 1.0, 1.0, 1.0])
+        
+        super(TooltipLabel, self).__init__(**kwargs)
+        
+        self.bg_color = bg
+        self.color = tc
+        self.size_hint = (None, None)
+        self.padding = [8, 4]
+        self.font_size = int(14 * App.get_running_app().fontscale)
+        
+        # Bind size to texture size
+        self.bind(texture_size=self._update_size)
+        self._update_size()
+        
+        # Draw background
+        with self.canvas.before:
+            Color(*self.bg_color)
+            self._bg_rect = SmoothRoundedRectangle(
+                pos=self.pos,
+                size=self.size,
+                radius=[5]
+            )
+        
+        self.bind(pos=self._update_bg, size=self._update_bg)
+    
+    def _update_size(self, *args):
+        """Update widget size to fit text content."""
+        self.size = (
+            self.texture_size[0] + self.padding[0] * 2,
+            self.texture_size[1] + self.padding[1] * 2
+        )
+    
+    def _update_bg(self, *args):
+        """Update background rectangle position and size."""
+        if hasattr(self, '_bg_rect'):
+            self._bg_rect.pos = self.pos
+            self._bg_rect.size = self.size
+
+
 class SettingsDialog(Popup):
     """Settings dialog with keyboard support for escape key."""
     
@@ -262,7 +445,7 @@ class DisplayLabelAlt(Label):
 
     bkgnd_color = ListProperty([0., 0., 0., 0.])
 
-class DisplayToggleButton(ToggleButton):
+class DisplayToggleButton(ToggleButton, TooltipBehavior):
 
     bkgnd_color = ListProperty([0.345, 0.345, 0.345])
 
@@ -281,7 +464,7 @@ class DisplayToggleButton(ToggleButton):
         else:
             self.bkgnd_color = theme['button_normal']
 
-class ImageButton(ButtonBehavior, Image):
+class ImageButton(ButtonBehavior, TooltipBehavior, Image):
 
     bkgnd_color = ListProperty([0.345, 0.345, 0.345])
 
@@ -297,7 +480,7 @@ class ImageButton(ButtonBehavior, Image):
         else:
             self.bkgnd_color = theme['button_normal']
 
-class AltImageButton(ButtonBehavior, Image):
+class AltImageButton(ButtonBehavior, TooltipBehavior, Image):
 
     bkgnd_color = ListProperty([0.03125, 0.03125, 0.03125, 0.8])
 
@@ -306,7 +489,7 @@ class AltImageButton(ButtonBehavior, Image):
         theme = settings_manager.get_current_theme()
         self.bkgnd_color = theme['panel_background']
 
-class ImageToggleButton(ToggleButtonBehavior, Image):
+class ImageToggleButton(ToggleButtonBehavior, TooltipBehavior, Image):
 
     bkgnd_color = ListProperty([0.345, 0.345, 0.345])
 
@@ -322,7 +505,7 @@ class ImageToggleButton(ToggleButtonBehavior, Image):
         else:
             self.bkgnd_color = theme['button_normal']
 
-class AltImageToggleButton(ToggleButtonBehavior, Image):
+class AltImageToggleButton(ToggleButtonBehavior, TooltipBehavior, Image):
 
     bkgnd_color = ListProperty([0.03125, 0.03125, 0.03125, 0.8])
     normal_source = StringProperty('')
@@ -335,7 +518,7 @@ class AltImageToggleButton(ToggleButtonBehavior, Image):
             self.source = self.normal_source
         self.reload()
 
-class ImageSpinButton(ButtonBehavior, Image):
+class ImageSpinButton(ButtonBehavior, TooltipBehavior, Image):
 
     bkgnd_color = ListProperty([0.345, 0.345, 0.345])
     index = NumericProperty(0)
@@ -364,8 +547,9 @@ class ImageSpinButton(ButtonBehavior, Image):
             self.actions[self.index]()
         except TypeError:
             pass
+        
 
-class LabelSpinButton(ButtonBehavior, Label):
+class LabelSpinButton(ButtonBehavior, TooltipBehavior, Label):
 
     bkgnd_color = ListProperty([0.345, 0.345, 0.345])
     index = NumericProperty(0)
@@ -3607,6 +3791,8 @@ class MainApp(App):
         
         # Load launch maximized setting
         self.launch_maximized = settings_manager.launch_maximized
+
+        self.tooltip_delay = settings_manager.tooltip_delay
         
         # Load color theme setting
         self.color_theme = settings_manager.color_theme
@@ -3698,6 +3884,10 @@ class MainApp(App):
         """Update launch maximized setting and save."""
         self.launch_maximized = value
         settings_manager.launch_maximized = value
+    
+    def update_tooltip_delay(self, delay):
+        """Update tooltip delay setting and save."""
+        settings_manager.tooltip_delay = delay
     
     def get_available_themes(self):
         """Get list of available theme names for the spinner."""

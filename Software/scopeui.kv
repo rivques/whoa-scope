@@ -354,6 +354,39 @@
                     halign: 'left'
                     text_size: self.size
                     valign: 'middle'
+            
+            # tooltip delay setting
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: 40
+                spacing: 10
+                
+                Label:
+                    text: 'Tooltip Delay:'
+                    font_size: int(16 * app.fontscale)
+                    size_hint_x: 0.2
+                    halign: 'right'
+                    text_size: self.size
+                    valign: 'middle'
+                
+                Slider:
+                    id: tooltip_delay_slider
+                    min: 0.0
+                    max: 2.0
+                    value: app.tooltip_delay
+                    step: 0.1
+                    size_hint_x: 0.5
+                    on_value: app.update_tooltip_delay(self.value)
+                
+                Label:
+                    text: str(round(tooltip_delay_slider.value, 1)) + ' seconds'
+                    font_size: int(14 * app.fontscale)
+                    size_hint_x: 0.3
+                    color: 0.6, 0.6, 0.6, 1
+                    halign: 'left'
+                    text_size: self.size
+                    valign: 'middle'
 
         # Window Settings Section
         BoxLayout:
@@ -855,6 +888,7 @@
             text: 'LED1'
             font_size: int(18 * app.fontscale)
             on_press: root.led1_callback()
+            tooltip_text: 'Toggle LED1'
 
         ToggleButton:
             id: led_two_button
@@ -862,6 +896,7 @@
             text: 'LED2'
             font_size: int(18 * app.fontscale)
             on_press: root.led2_callback()
+            tooltip_text: 'Toggle LED2'
 
         ToggleButton:
             id: led_three_button
@@ -869,6 +904,7 @@
             text: 'LED3'
             font_size: int(18 * app.fontscale)
             on_press: root.led3_callback()
+            tooltip_text: 'Toggle LED3'
 
         LogarithmicSlider:
             id: servo_period_slider
@@ -890,6 +926,7 @@
             text: 'D0'
             font_size: int(18 * app.fontscale)
             on_press: root.d0_button_callback()
+            tooltip_text: 'Toggle D0'
 
         BoxLayout:
             orientation: 'vertical'
@@ -950,6 +987,7 @@
             text: 'D1'
             font_size: int(18 * app.fontscale)
             on_press: root.d1_button_callback()
+            tooltip_text: 'Toggle D1'
 
         BoxLayout:
             orientation: 'vertical'
@@ -1010,6 +1048,7 @@
             text: 'D2'
             font_size: int(18 * app.fontscale)
             on_press: root.d2_button_callback()
+            tooltip_text: 'Toggle D2'
 
         BoxLayout:
             orientation: 'vertical'
@@ -1070,6 +1109,7 @@
             text: 'D3'
             font_size: int(18 * app.fontscale)
             on_press: root.d3_button_callback()
+            tooltip_text: 'Toggle D3'
 
         BoxLayout:
             orientation: 'vertical'
@@ -1178,6 +1218,7 @@
             size_hint: None, None
             size: 44, 30
             source: kivy_resources.resource_find('up.png')
+            tooltip_text: 'Go to Bode Plot'
             on_release:
                 app.root.transition.direction = 'up'
                 app.root.current = 'bode'
@@ -1254,6 +1295,7 @@
                     id: save_button
                     source: kivy_resources.resource_find('save.png')
                     size_hint_y: 1 / 9
+                    tooltip_text: 'Save Scope Trace to CSV'
                     on_release:
                         app.save_dialog_visible = True
                         Factory.ScopeSaveDialog().open()
@@ -1262,6 +1304,7 @@
                     id: play_pause_button
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('play.png')
+                    tooltip_text: 'Start/Stop Data Acquisition'
                     on_release: root.play_pause()
 
                 ImageToggleButton:
@@ -1269,6 +1312,7 @@
                     source: kivy_resources.resource_find('repeat.png')
                     size_hint_y: 1 / 9
                     on_press: root.toggle_trigger_repeat()
+                    tooltip_text: 'Toggle Repeat Trigger/Single Trigger Mode'
 
                 LabelSpinButton:
                     id: trigger_src_button
@@ -1278,6 +1322,7 @@
                     text: self.texts[0]
                     markup: True
                     text_size: self.width - 10, self.height - 10
+                    tooltip_text: 'Trigger on CH1 or CH2'
                     valign: 'center'
                     halign: 'center'
 
@@ -1285,6 +1330,7 @@
                     id: trigger_edge_button
                     sources: [kivy_resources.resource_find('rising_edge.png'), kivy_resources.resource_find('falling_edge.png')]
                     actions: [root.set_trigger_edge_rising, root.set_trigger_edge_falling]
+                    tooltip_text: 'Trigger on Rising or Falling Edge of Signal'
                     source: self.sources[0]
                     size_hint_y: 1 / 9
 
@@ -1293,22 +1339,26 @@
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('h_cursors.png')
                     on_press: root.toggle_h_cursors()
+                    tooltip_text: 'Toggle Horizontal Cursors'
 
                 ImageToggleButton:
                     id: v_cursors_button
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('v_cursors.png')
                     on_press: root.toggle_v_cursors()
+                    tooltip_text: 'Toggle Vertical Cursors'
 
                 ImageButton:
                     size_hint_y: 1 / 18
                     source: kivy_resources.resource_find('up.png')
                     on_press: scope_plot.increase_gain()
+                    tooltip_text: 'Increase Gain'
 
                 ImageButton:
                     size_hint_y: 1 / 18
                     source: kivy_resources.resource_find('down.png')
                     on_press: scope_plot.decrease_gain()
+                    tooltip_text: 'Decrease Gain'
 
                 BoxLayout:
                     orientation: 'horizontal'
@@ -1318,11 +1368,13 @@
                         size_hint_x: 0.5
                         source: kivy_resources.resource_find('left.png')
                         on_press: scope_plot.increase_sampling_interval()
+                        tooltip_text: 'Increase Timebase (Fewer Samples per Second)'
 
                     ImageButton:
                         size_hint_x: 0.5
                         source: kivy_resources.resource_find('right.png')
                         on_press: scope_plot.decrease_sampling_interval()
+                        tooltip_text: 'Decrease Timebase (More Samples per Second)'
                 
                 ImageButton:
                     id: settings_button
@@ -1330,6 +1382,7 @@
                     font_size: 24
                     size_hint_y: 1 / 18
                     background_color: 0.345, 0.345, 0.345, 1
+                    tooltip_text: 'Open Settings Dialog'
                     on_release:
                         app.settings_dialog_visible = True
                         Factory.SettingsDialog().open()
@@ -1342,6 +1395,7 @@
                 normal_source: kivy_resources.resource_find('left.png')
                 down_source: kivy_resources.resource_find('right.png')
                 source: self.normal_source
+                tooltip_text: 'Toggle Toolbar'
                 on_state: root.toggle_toolbar()
 
         FloatLayout:
@@ -1365,18 +1419,21 @@
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('swapxy.png')
                     on_release: root.xyplot_swap_axes()
+                    tooltip_text: 'Swap X and Y Axes'
 
                 ImageToggleButton:
                     id: xy_h_cursors_button
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('h_cursors.png')
                     on_press: root.toggle_xy_h_cursors()
+                    tooltip_text: 'Toggle Horizontal Cursors'
 
                 ImageToggleButton:
                     id: xy_v_cursors_button
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('v_cursors.png')
                     on_press: root.toggle_xy_v_cursors()
+                    tooltip_text: 'Toggle Vertical Cursors'
 
             AltImageToggleButton:
                 size_hint_x: None
@@ -1387,6 +1444,7 @@
                 down_source: kivy_resources.resource_find('left.png')
                 source: self.normal_source
                 on_state: root.toggle_xyplot()
+                tooltip_text: 'Toggle XY Plot'
 
         FloatLayout:
             id: wavegen
@@ -1411,6 +1469,7 @@
                     allow_no_selection: False
                     group: 'waveshape'
                     on_press: root.set_shape('DC')
+                    tooltip_text: 'Set Waveform to DC'
 
                 ImageToggleButton:
                     id: sin_button
@@ -1420,6 +1479,7 @@
                     group: 'waveshape'
                     state: 'down'
                     on_press: root.set_shape('SIN')
+                    tooltip_text: 'Set Waveform to Sine'
 
                 ImageToggleButton:
                     id: square_button
@@ -1428,6 +1488,7 @@
                     allow_no_selection: False
                     group: 'waveshape'
                     on_press: root.set_shape('SQUARE')
+                    tooltip_text: 'Set Waveform to Square'
 
                 ImageToggleButton:
                     id: triangle_button
@@ -1436,6 +1497,7 @@
                     allow_no_selection: False
                     group: 'waveshape'
                     on_press: root.set_shape('TRIANGLE')
+                    tooltip_text: 'Set Waveform to Triangle'
 
                 BoxLayout:
                     orientation: 'horizontal'
@@ -1445,11 +1507,13 @@
                         size_hint_x: 0.5
                         source: kivy_resources.resource_find('left.png')
                         on_press: wavegen_plot.increase_frequency()
+                        tooltip_text: 'Increase Wave Frequency'
 
                     ImageButton:
                         size_hint_x: 0.5
                         source: kivy_resources.resource_find('right.png')
                         on_press: wavegen_plot.decrease_frequency()
+                        tooltip_text: 'Decrease Wave Frequency'
 
                 Slider:
                     id: offset_adj_slider
@@ -1469,6 +1533,7 @@
                 down_source: kivy_resources.resource_find('left.png')
                 source: self.normal_source
                 on_state: root.toggle_wavegen()
+                tooltip_text: 'Toggle Waveform Generator'
 
         FloatLayout:
             id: offset_waveform_control_panel
@@ -1490,6 +1555,7 @@
                     id: offset_waveform_load_button
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('save.png')
+                    tooltip_text: 'Load Offset Waveform from File'
                     on_release:
                         app.save_dialog_visible = True
                         Factory.OffsetWaveformLoadDialog().open()
@@ -1499,18 +1565,21 @@
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('play.png')
                     on_release: root.offset_waveform_play_pause_button_callback()
+                    tooltip_text: 'Start/Stop Offset Waveform Playback'
 
                 ImageToggleButton:
                     id: offset_waveform_repeat_button
                     source: kivy_resources.resource_find('repeat.png')
                     size_hint_y: 1 / 9
                     on_press: root.offset_waveform_repeat_button_callback()
+                    tooltip_text: 'Toggle Offset Waveform Repeat/Single Playback Mode'
 
                 ImageToggleButton:
                     id: offset_waveform_interval_snap_button
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('magnet_alt.png')
                     state: 'down'
+                    tooltip_text: 'Snap Offset Waveform Interval to Standard Values'
                     on_state:
                         offset_waveform_interval_slider.step = 0.5 if self.state == 'down' else 0.
                         offset_waveform_interval_slider.value = root.nearest_one_three(offset_waveform_interval_slider.value) if offset_waveform_interval_snap_button.state == 'down' else offset_waveform_interval_slider.value
@@ -1534,6 +1603,7 @@
                 down_source: kivy_resources.resource_find('left.png')
                 source: self.normal_source
                 on_state: root.toggle_offset_waveform()
+                tooltip_text: 'Toggle Offset Waveform'
 
         FloatLayout:
             id: view_toolbar
@@ -1562,6 +1632,7 @@
                         size_hint_x: 0.25
                         source: kivy_resources.resource_find('left.png')
                         on_release: root.pan_left()
+                        tooltip_text: 'Pan View Left (Back in Time)'
 
                     BoxLayout:
                         orientation: 'vertical'
@@ -1572,24 +1643,28 @@
                             size_hint_y: 0.5
                             source: kivy_resources.resource_find('up.png')
                             on_release: root.pan_up()
+                            tooltip_text: 'Pan View Up'
 
                         ImageButton:
                             id: pan_down_button
                             size_hint_y: 0.5
                             source: kivy_resources.resource_find('down.png')
                             on_release: root.pan_down()
+                            tooltip_text: 'Pan View Down'
 
                     ImageButton:
                         id: pan_right_button
                         size_hint_x: 0.25
                         source: kivy_resources.resource_find('right.png')
                         on_release: root.pan_right()
+                        tooltip_text: 'Pan View Right (Forward in Time)'
 
                     ImageButton:
                         id: home_view_button
                         size_hint_x: 0.25
                         source: kivy_resources.resource_find('home.png')
                         on_release: root.home_view()
+                        tooltip_text: 'Reset View to Home Position'
 
                 BoxLayout:
                     orientation: 'horizontal'
@@ -1600,24 +1675,28 @@
                         size_hint_x: 0.25
                         source: kivy_resources.resource_find('zoom_in_y.png')
                         on_release: root.zoom_in_y()
+                        tooltip_text: 'Zoom In Vertically'
 
                     ImageButton:
                         id: zoom_out_y_button
                         size_hint_x: 0.25
                         source: kivy_resources.resource_find('zoom_out_y.png')
                         on_release: root.zoom_out_y()
+                        tooltip_text: 'Zoom Out Vertically'
 
                     ImageButton:
                         id: zoom_in_x_button
                         size_hint_x: 0.25
                         source: kivy_resources.resource_find('zoom_in_x.png')
                         on_release: root.zoom_in_x()
+                        tooltip_text: 'Zoom In Horizontally'
 
                     ImageButton:
                         id: zoom_out_x_button
                         size_hint_x: 0.25
                         source: kivy_resources.resource_find('zoom_out_x.png')
                         on_release: root.zoom_out_x()
+                        tooltip_text: 'Zoom Out Horizontally'
 
             AltImageToggleButton:
                 pos_hint: { 'center_x': 0.5, 'top': 0 }
@@ -1627,6 +1706,7 @@
                 down_source: kivy_resources.resource_find('up.png')
                 source: self.normal_source
                 on_state: root.toggle_view_toolbar()
+                tooltip_text: 'Toggle View Toolbar'
 
         FloatLayout:
             id: digital_controls
@@ -1648,7 +1728,7 @@
                 down_source: kivy_resources.resource_find('left.png')
                 source: self.normal_source
                 on_state: root.toggle_digital_controls()
-
+                tooltip_text: 'Toggle Digital Controls'
 <BodeRoot>
     bode_plot: bode_plot
     bode_toolbar: bode_toolbar
@@ -1677,6 +1757,7 @@
             size_hint: None, None
             size: 44, 30
             source: kivy_resources.resource_find('down.png')
+            tooltip_text: 'Go to Oscilloscope'
             on_release:
                 app.root.transition.direction = 'down'
                 app.root.current = 'scope'
@@ -1703,6 +1784,7 @@
                     id: save_button
                     source: kivy_resources.resource_find('save.png')
                     size_hint_y: 1 / 9
+                    tooltip_text: 'Save Bode Plot Data to CSV'
                     on_release:
                         app.save_dialog_visible = True
                         Factory.BodeSaveDialog().open()
@@ -1711,17 +1793,20 @@
                     id: play_stop_button
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('play.png')
+                    tooltip_text: 'Start/Stop Bode Plot Measurement'
                     on_release: root.play_stop()
 
                 ImageToggleButton:
                     id: trigger_repeat_button
                     source: kivy_resources.resource_find('repeat.png')
+                    tooltip_text: 'Toggle Repeat Measurement/Single Measurement Mode'
                     size_hint_y: 1 / 9
 
                 ImageToggleButton:
                     id: pointmarkers_button
                     size_hint_y: 1 / 9
                     source: kivy_resources.resource_find('pointmarkers.png')
+                    tooltip_text: 'Toggle Point Markers'
                     on_press: root.toggle_pointmarkers()
 
             AltImageToggleButton:
@@ -1733,6 +1818,7 @@
                 down_source: kivy_resources.resource_find('right.png')
                 source: self.normal_source
                 on_state: root.toggle_bode_toolbar()
+                tooltip_text: 'Toggle Toolbar'
 
         FloatLayout:
             id: bode_controls
@@ -1815,6 +1901,7 @@
                 down_source: kivy_resources.resource_find('left.png')
                 source: self.normal_source
                 on_state: root.toggle_bode_controls()
+                tooltip_text: 'Toggle Toolbar'
 
 <RootWidget>
     scope: scope_root

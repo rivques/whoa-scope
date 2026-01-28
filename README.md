@@ -1,8 +1,16 @@
 # Whoa-Scope
 This repository is a fork of the O-Scope software by [Bradley Minch](https://github.com/bminch/O-Scope). It includes several small tweaks and improvements over the original O-Scope software.
 
-## Current changes
+Themes|Tooltips|Settings 
+---|---|---
+![A screenshot of Whoa-Scope in shark theme](/docs-pics/whoascope-theme.png)|![A screenshot of Whoa-Scope's tooltips](/docs-pics/whoascope-tooltips.png)|![A screenshot of Whoa-Scope's settings menu](/docs-pics/whoascope-settings.png)
+
+## Installation
+To install Whoa-Scope, head to the [releases](https://github.com/rivques/whoa-scope/releases) and download the latest version.
+
+## Current changes from base O-Scope
 * Custom color themes (light mode, etc. Feel free to request more!)
+* Hover tips to describe what buttons do
 * Increased window size on launch
 * Improved voltmeter text formatting
 * Choice of fonts and font size (Atkinson Hyperlegible, OpenDyslexic)
@@ -13,7 +21,6 @@ This repository is a fork of the O-Scope software by [Bradley Minch](https://git
 * Use native file picker when saving data files
 * Customizeable hotkeys
 * Add text to icons/arrows describing what they do
-* Hover tips to describe what buttons do
 * Allow popping overlays into separate windows (difficult, poorly supported by the UI library)
 
 ## Development

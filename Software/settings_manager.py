@@ -30,6 +30,8 @@ COLOR_THEMES = {
         'waveform_color': '#00FF00',       # Green (for wavegen)
         'gain_color': '#FF00FF',           # Magenta (for bode gain)
         'phase_color': '#00FFFF',          # Cyan (for bode phase)
+        'tooltip_background': [0.2, 0.2, 0.2, 0.95],  # Dark gray translucent
+        'tooltip_text_color': [1.0, 1.0, 1.0, 1.0],   # White
     },
     'light': {
         'name': 'Light Mode',
@@ -46,6 +48,8 @@ COLOR_THEMES = {
         'waveform_color': '#008800',       # Dark green (for wavegen)
         'gain_color': '#8800AA',           # Purple (for bode gain)
         'phase_color': '#CC0000',          # Dark red (for bode phase)
+        'tooltip_background': [0.95, 0.95, 0.9, 0.95],  # Light cream
+        'tooltip_text_color': [0.0, 0.0, 0.0, 1.0],     # Black
     },
     'homebrew': {
         'name': 'Homebrew',
@@ -62,6 +66,8 @@ COLOR_THEMES = {
         'waveform_color': '#00FF00',       # Green (for wavegen)
         'gain_color': '#00FF00',           # Green (for bode gain)
         'phase_color': '#006600',          # Darker green (for bode phase)
+        'tooltip_background': [0.0, 0.15, 0.0, 0.95],  # Dark green
+        'tooltip_text_color': [0.0, 1.0, 0.0, 1.0],    # Green
     },
     'rat': {
         'name': 'Rat',
@@ -78,6 +84,8 @@ COLOR_THEMES = {
         'waveform_color': "#00CCFF", 
         'gain_color': '#FF00FF',           # Magenta (for bode gain)
         'phase_color': '#FFFF00',          # Yellow (for bode phase)
+        'tooltip_background': [0.3, 0.15, 0.0, 0.95],  # Brown
+        'tooltip_text_color': [1.0, 1.0, 0.0, 1.0],    # Yellow
     },
     'nook': {
         'name': 'Nook',
@@ -94,6 +102,8 @@ COLOR_THEMES = {
         'waveform_color': '#00FFFF',       # Cyan (for wavegen)
         'gain_color': '#FF00FF',           # Magenta (for bode gain)
         'phase_color': '#FFFF00',          # Yellow (for bode phase)
+        'tooltip_background': [0.3, 0.0, 0.3, 0.95],  # Dark purple
+        'tooltip_text_color': [1.0, 1.0, 1.0, 1.0],   # White
     },
     'garfield': {
         'name': 'Garfield',
@@ -110,6 +120,8 @@ COLOR_THEMES = {
         'waveform_color': '#00FFFF',
         'gain_color': '#FF00FF',
         'phase_color': '#FFFF00',
+        'tooltip_background': [0.8, 0.4, 0.0, 0.95],  # Orange
+        'tooltip_text_color': [0.0, 0.0, 0.0, 1.0],   # Black
     },
     'shark': {
         'name': 'Shark',
@@ -126,6 +138,8 @@ COLOR_THEMES = {
         'waveform_color': '#00FFFF',
         'gain_color': '#FF00FF',
         'phase_color': '#FFFF00',
+        'tooltip_background': [0.2, 0.5, 0.7, 0.95],  # Blue-ish
+        'tooltip_text_color': [1.0, 1.0, 1.0, 1.0],   # White
     },
     'custom': {
         'name': 'Custom',
@@ -142,6 +156,8 @@ COLOR_THEMES = {
         'waveform_color': '#00FF00',
         'gain_color': '#FF00FF',
         'phase_color': '#00FFFF',
+        'tooltip_background': [0.2, 0.2, 0.2, 0.95],
+        'tooltip_text_color': [1.0, 1.0, 1.0, 1.0],
     },
 }
 
@@ -321,6 +337,14 @@ class SettingsManager:
     @color_theme.setter
     def color_theme(self, value):
         self.set('color_theme', value)
+    
+    @property
+    def tooltip_delay(self):
+        return self.get('tooltip_delay', 0.5)
+    
+    @tooltip_delay.setter
+    def tooltip_delay(self, value):
+        self.set('tooltip_delay', value)
     
     @property
     def custom_theme(self):
