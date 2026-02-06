@@ -141,6 +141,24 @@ COLOR_THEMES = {
         'tooltip_background': [0.2, 0.5, 0.7, 0.95],  # Blue-ish
         'tooltip_text_color': [1.0, 1.0, 1.0, 1.0],   # White
     },
+    'ireland': {
+        'name': 'ireland',
+        'ch1_color': '#FF8200',
+        'ch2_color': "#FFFFFF",
+        'plot_background': "#009844",
+        'axes_background': '#009844',
+        'axes_color': '#FFFFFF',
+        'grid_color': "#FFFFFF",
+        'text_color': [1.0, 1.0, 1.0, 1.0],
+        'button_normal': [255/255, 130/255, 0/255],
+        'button_pressed': [255/511, 130/511, 0/511],
+        'panel_background': [0.0, 0.0, 0.0, 0.8],
+        'waveform_color': '#00FFFF',
+        'gain_color': '#FF00FF',
+        'phase_color': '#FFFF00',
+        'tooltip_background': [0.2, 0.5, 0.7, 0.95],  # Blue-ish
+        'tooltip_text_color': [1.0, 1.0, 1.0, 1.0],   # White
+    },
     'custom': {
         'name': 'Custom',
         'ch1_color': '#FFFF00',

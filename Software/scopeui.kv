@@ -250,7 +250,7 @@
             height: 40
             
             Label:
-                text: '[b]About[/b]'
+                text: '[b]About[/b] ' + ('Whoa-Scope v' + app.title.split('v')[-1] if 'v' in app.title else 'Whoa-Scope')
                 font_size: int(18 * app.fontscale)
                 markup: True
                 halign: 'left'
@@ -259,7 +259,7 @@
                 height: 25
             
             Label:
-                text: 'Whoa-Scope v' + app.title.split('v')[-1] if 'v' in app.title else 'Whoa-Scope'
+                text: "Based on O-Scope by @bminch, changes by @rivques and @happysmaran"
                 font_size: int(16 * app.fontscale)
                 halign: 'left'
                 text_size: self.size

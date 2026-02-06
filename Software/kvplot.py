@@ -258,6 +258,7 @@ class Plot(Widget):
         self.label_fontsize = int(kwargs.get('fontsize', self.label_fontsize))
         self.label_font = kwargs.get('font', self.label_font)
         self.linear_minor_ticks = kwargs.get('linear_minor_ticks', 'off')
+        self.grid_color = kwargs.get('grid_color', self.grid_color)
 
         self.init_markers(self.marker_radius)
         self.refresh_plot()
