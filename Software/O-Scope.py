@@ -718,7 +718,7 @@ class ScopePlot(Plot):
         self.draw_h_cursors()
         self.draw_chs_display()
         if self.show_sampling_rate and (self.sampling_rate_display != ''):
-            self.add_text(text = self.sampling_rate_display, anchor_pos = [self.axes_right, self.axes_top + 0.5 * self.label_fontsize], anchor = 'se', color = self.axes_color, font_size = self.label_fontsize)
+            self.add_text(text = self.sampling_rate_display, anchor_pos = [self.axes_right, self.axes_bottom - 3.5 * self.label_fontsize], anchor = 'se', color = self.axes_color, font_size = self.label_fontsize)
 
     def draw_zero_levels(self, r = 2.):
         for name in ('CH2', 'CH1') if self.left_yaxis == 'CH1' else ('CH1', 'CH2'):
@@ -2995,14 +2995,7 @@ class ScopeRoot(Screen):
             self.offset_waveform_play_pause_button_update_job = None
 
     def toggle_toolbar(self):
-        if self.toolbar_visible:
-            anim = Animation(x_hint = 1, duration = 0.1)
-            anim.start(self.scope_toolbar)
-            self.toolbar_visible = False
-        else:
-            anim = Animation(x_hint = 0.94, duration = 0.1)
-            anim.start(self.scope_toolbar)
-            self.toolbar_visible = True
+        pass
 
     def toggle_offset_waveform(self):
         if self.offset_waveform_visible:
@@ -3583,14 +3576,7 @@ class BodeRoot(Screen):
             self.stop_sweep()
 
     def toggle_bode_toolbar(self):
-        if self.bode_toolbar_visible:
-            anim = Animation(x_hint = 1, duration = 0.1)
-            anim.start(self.bode_toolbar)
-            self.bode_toolbar_visible = False
-        else:
-            anim = Animation(x_hint = 0.94, duration = 0.1)
-            anim.start(self.bode_toolbar)
-            self.bode_toolbar_visible = True
+        pass
 
     def toggle_bode_controls(self):
         if self.bode_controls_visible:

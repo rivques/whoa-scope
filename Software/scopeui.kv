@@ -1277,7 +1277,8 @@
                 caption_position: 'right'
                 on_state: root.toggle_meter()
 
-        FloatLayout:
+        BoxLayout:
+            orientation: 'vertical'
             id: scope_toolbar
             canvas.before:
                 Color:
@@ -1286,9 +1287,9 @@
                     size: self.size
                     pos: self.pos
 
-            size_hint: 0.06, 1
+            size_hint: 0.05, 1
             x_hint: 1
-            pos_hint: { 'x': self.x_hint, 'y': 0 }
+            pos_hint: { 'x': 0.95, 'y': 0 }
 
             BoxLayout:
                 orientation: 'vertical'
@@ -1390,17 +1391,6 @@
                     on_release:
                         app.settings_dialog_visible = True
                         Factory.SettingsDialog().open()
-
-            AltImageToggleButton:
-                size_hint_x: None
-                size_hint_y: 1
-                pos_hint: { 'right': 0, 'center_y' : 0.5 }
-                width: 30
-                normal_source: kivy_resources.resource_find('left.png')
-                down_source: kivy_resources.resource_find('right.png')
-                source: self.normal_source
-                tooltip_text: 'Toggle Toolbar'
-                on_state: root.toggle_toolbar()
 
         FloatLayout:
             id: xyplot
@@ -1774,7 +1764,8 @@
                 app.root.transition.direction = 'down'
                 app.root.current = 'scope'
 
-        FloatLayout:
+        BoxLayout:
+            orientation: 'vertical'
             id: bode_toolbar
             canvas.before:
                 Color:
@@ -1783,9 +1774,9 @@
                     size: self.size
                     pos: self.pos
 
-            size_hint: 0.06, 4 / 9 
+            size_hint: 0.05, 4 / 9 
             x_hint: 1
-            pos_hint: { 'x': self.x_hint, 'y': 5 / 9 }
+            pos_hint: { 'x': 0.95, 'y': 5 / 9 }
 
             BoxLayout:
                 orientation: 'vertical'
@@ -1820,17 +1811,6 @@
                     source: kivy_resources.resource_find('pointmarkers.png')
                     tooltip_text: 'Toggle Point Markers'
                     on_press: root.toggle_pointmarkers()
-
-            AltImageToggleButton:
-                size_hint_x: None
-                size_hint_y: 1
-                pos_hint: { 'right': 0, 'center_y' : 0.5 }
-                width: 30
-                normal_source: kivy_resources.resource_find('left.png')
-                down_source: kivy_resources.resource_find('right.png')
-                source: self.normal_source
-                on_state: root.toggle_bode_toolbar()
-                tooltip_text: 'Toggle Toolbar'
 
         FloatLayout:
             id: bode_controls
