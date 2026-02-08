@@ -40,6 +40,8 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.utils import platform
 
+from plyer import filechooser
+
 import numpy as np
 import sigfig
 import math
@@ -4282,71 +4284,84 @@ class MainApp(App):
         else:
             return pathlib.Path(selection).name
 
-    def export_waveforms(self, path, filename, overwrite_existing_file = False):
-        self.save_dialog_path = path
-        self.save_dialog_file = None
+    def open_save_waveform_dialog(self):
+        filechooser.save_file(
+            on_selection=self._on_waveform_save_selection,
+            title="Save Waveforms",
+            filters=[("CSV Files", "*.csv"), ("Text Files", "*.txt")]
+        )
 
-        if filename == '':
+    def _on_waveform_save_selection(self, selection):
+        if selection:
+            # selection is a list, so take only the first item
+            self.export_waveforms(selection[0])
+
+    def open_save_bode_dialog(self):
+        filechooser.save_file(
+            on_selection=self._on_bode_save_selection,
+            title="Save Frequency Response",
+            filters=[("CSV Files", "*.csv"), ("Text Files", "*.txt")]
+        )
+
+    def _on_bode_save_selection(self, selection):
+        if selection:
+            self.export_freqresp(selection[0])
+
+    def export_waveforms(self, filepath):
+        if not filepath:
             return
 
-        if os.path.exists(os.path.join(path, filename)) and not overwrite_existing_file:
-            self.save_dialog_file = filename
-            Factory.FileExistsAlert().open()
-            return
+        # Ensure correct extension if missing
+        if not (filepath.lower().endswith('.csv') or filepath.lower().endswith('.txt')):
+            filepath += '.csv'
 
         try:
-            outfile = open(os.path.join(path, filename), 'w')
-        except:
+            with open(filepath, 'w') as outfile:
+                if filepath.lower().endswith('.txt'):
+                    outfile.write('t1\tch1\tt2\tch2\n')
+                    sep = '\t'
+                else:
+                    outfile.write('t1,ch1,t2,ch2\n')
+                    sep = ','
+
+                # Access plot data directly
+                curve_ch1 = self.root.scope.scope_plot.curves['CH1']
+                curve_ch2 = self.root.scope.scope_plot.curves['CH2']
+
+                for i in range(len(curve_ch1.points_x)):
+                    for j in range(len(curve_ch1.points_x[i])):
+                        line = f'{curve_ch1.points_x[i][j]}{sep}'
+                        line += f'{curve_ch1.points_y[i][j]}{sep}'
+                        line += f'{curve_ch2.points_x[i][j]}{sep}'
+                        line += f'{curve_ch2.points_y[i][j]}\n'
+                        outfile.write(line)
+        except Exception as e:
+            print(f"Error saving waveforms: {e}")
+
+    def export_freqresp(self, filepath):
+        if not filepath:
             return
 
-        if filename[-4:] == '.txt' or filename[-4:] == '.TXT':
-            outfile.write('t1\tch1\tt2\tch2\n')
-            sep = '\t'
-        else:
-            outfile.write('t1,ch1,t2,ch2\n')
-            sep = ','
-
-        for i in range(len(self.root.scope.scope_plot.curves['CH1'].points_x)):
-            for j in range(len(self.root.scope.scope_plot.curves['CH1'].points_x[i])):
-                line = '{!s}{!s}'.format(self.root.scope.scope_plot.curves['CH1'].points_x[i][j], sep)
-                line += '{!s}{!s}'.format(self.root.scope.scope_plot.curves['CH1'].points_y[i][j], sep)
-                line += '{!s}{!s}'.format(self.root.scope.scope_plot.curves['CH2'].points_x[i][j], sep)
-                line += '{!s}\n'.format(self.root.scope.scope_plot.curves['CH2'].points_y[i][j])
-                outfile.write(line)
-
-        outfile.close()
-
-    def export_freqresp(self, path, filename, overwrite_existing_file = False):
-        self.save_dialog_path = path
-        self.save_dialog_file = None
-
-        if filename == '':
-            return
-
-        if os.path.exists(os.path.join(path, filename)) and not overwrite_existing_file:
-            self.save_dialog_file = filename
-            Factory.FileExistsAlert().open()
-            return
+        if not (filepath.lower().endswith('.csv') or filepath.lower().endswith('.txt')):
+            filepath += '.csv'
 
         try:
-            outfile = open(os.path.join(path, filename), 'w')
-        except:
-            return
+            with open(filepath, 'w') as outfile:
+                if filepath.lower().endswith('.txt'):
+                    outfile.write('freq\tgain\tphase\n')
+                    sep = '\t'
+                else:
+                    outfile.write('freq,gain,phase\n')
+                    sep = ','
 
-        if filename[-4:] == '.txt' or filename[-4:] == '.TXT':
-            outfile.write('freq\tgain\tphase\n')
-            sep = '\t'
-        else:
-            outfile.write('freq,gain,phase\n')
-            sep = ','
-
-        for i in range(len(self.root.bode.freq)):
-            line = '{!s}{!s}'.format(self.root.bode.freq[i], sep)
-            line += '{!s}{!s}'.format(self.root.bode.gain[i], sep)
-            line += '{!s}\n'.format(self.root.bode.phase[i])
-            outfile.write(line)
-
-        outfile.close()
+                bode_root = self.root.bode
+                for i in range(len(bode_root.freq)):
+                    line = f'{bode_root.freq[i]}{sep}'
+                    line += f'{bode_root.gain[i]}{sep}'
+                    line += f'{bode_root.phase[i]}\n'
+                    outfile.write(line)
+        except Exception as e:
+            print(f"Error saving frequency response: {e}")
 
     def load_offset_waveform(self, path, filename):
         if not self.dev.connected:

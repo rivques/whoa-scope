@@ -502,6 +502,15 @@ wheels = [
 ]
 
 [[package]]
+name = "plyer"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/85/f61425aa9be1f9108eec1c13861c1e11c9a04eb786eb4832a8f7188317df/plyer-2.1.0.tar.gz", hash = "sha256:65b7dfb7e11e07af37a8487eb2aa69524276ef70dad500b07228ce64736baa61", size = 121371, upload-time = "2022-11-12T13:36:48.978Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d3/89/a41c2643fc8eabeb84791acb9d0e4d139b1e4b53473cc4dae947b5fa33ed/plyer-2.1.0-py2.py3-none-any.whl", hash = "sha256:1b1772060df8b3045ed4f08231690ec8f7de30f5a004aa1724665a9074eed113", size = 142266, upload-time = "2022-11-12T13:36:47.181Z" },
+]
+
+[[package]]
 name = "pygments"
 version = "2.19.2"
 source = { registry = "https://pypi.org/simple" }
@@ -549,6 +558,25 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/31/8f/8052ff65067697ee80fde45b9731842e160751c41ac5690ba232c22030e8/pyinstaller_hooks_contrib-2026.0.tar.gz", hash = "sha256:0120893de491a000845470ca9c0b39284731ac6bace26f6849dea9627aaed48e", size = 170311, upload-time = "2026-01-20T00:15:23.922Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d5/b1/9da6ec3e88696018ee7bb9dc4a7310c2cfaebf32923a19598cd342767c10/pyinstaller_hooks_contrib-2026.0-py3-none-any.whl", hash = "sha256:0590db8edeba3e6c30c8474937021f5cd39c0602b4d10f74a064c73911efaca5", size = 452318, upload-time = "2026-01-20T00:15:21.88Z" },
+]
+
+[[package]]
+name = "pyobjus"
+version = "1.2.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/75/f7ae38607648f9ccb363447b83480fcf0e582c42d62908bbcce05afbe754/pyobjus-1.2.4.tar.gz", hash = "sha256:4877101ff3b70b7fd2b12b2878ab23ee488018ce613f12948b58ff4c7e363388", size = 167844, upload-time = "2025-12-29T14:48:18.514Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5e/78/e75613faed2f1336d1a2549b5376d80c83f21f0aee6842d6cac91893c8ae/pyobjus-1.2.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:cf261b1388003095199a8f0267f31505573cbceef6ad3e4724be364268b16148", size = 547886, upload-time = "2025-12-29T14:48:05.968Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/9c/0328355bbe08c4a71d839c11c11f929b3c4e11f064d2f9b7480fd0d8bfc3/pyobjus-1.2.4-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:e83175b910bae4946e6464396d7a68e336b5ccfa81f7e9d1c7a46f06ec97efc5", size = 551941, upload-time = "2025-12-29T14:48:07.298Z" },
+    { url = "https://files.pythonhosted.org/packages/94/24/40bbd10854f110ba5812881553d017c276e52c477dfddf151cdac3667f81/pyobjus-1.2.4-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:f4da2314b85a57b67e1101493b94da245f03cef8465da698ff5949bec13e8d37", size = 529439, upload-time = "2025-12-29T14:48:08.741Z" },
+    { url = "https://files.pythonhosted.org/packages/50/d4/730e1767fb55db56b20561180cf3553f429b78f56f24c34064fd41a893c1/pyobjus-1.2.4-cp313-cp313-ios_13_0_arm64_iphoneos.whl", hash = "sha256:5ce6202c9d4f3ef62acc132ece498f7ae599061c8071c26623ad545cb37ea7ee", size = 279773, upload-time = "2025-12-29T14:48:09.968Z" },
+    { url = "https://files.pythonhosted.org/packages/a0/fb/879560b837eedfabebe16d7fcf1ca96e9139535651d9a42acb14ef9351c5/pyobjus-1.2.4-cp313-cp313-ios_13_0_arm64_iphonesimulator.whl", hash = "sha256:737124a6ee884150f0d74a3193830e0cf04704334c1c41a4fc1738abec433571", size = 286164, upload-time = "2025-12-29T14:48:11.098Z" },
+    { url = "https://files.pythonhosted.org/packages/34/e2/7d49052b1fe81025dd134905b2580a291aa496d3bf8e684aaf32e6ab750e/pyobjus-1.2.4-cp313-cp313-ios_13_0_x86_64_iphonesimulator.whl", hash = "sha256:7e98cd16ff66404783d0629d28a58122c6789d6b6b54dab200aa176afa35e2e4", size = 302408, upload-time = "2025-12-29T14:48:12.249Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/51/ed32815d349a27ff9e46f814f61420e8b6147bdd9f94b22bb0b7be17efc8/pyobjus-1.2.4-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:248c70d84ab026aeaecb25703042ba3e25ec72a42e5f30ff2f2b7ec1197ac621", size = 525787, upload-time = "2025-12-29T14:48:13.339Z" },
+    { url = "https://files.pythonhosted.org/packages/00/07/7626f16162c3e9a2df6eac876d5cff2a2eb31f6a9f204a421cd9d3902909/pyobjus-1.2.4-cp314-cp314-ios_13_0_arm64_iphoneos.whl", hash = "sha256:1a23280fd78db520cafe01b4637b1aaa9ff09845fd74e37b9d5682914f838700", size = 282928, upload-time = "2025-12-29T14:48:14.457Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/7b/820b8f73057cdecff00cea5b6c84becb9f73430578f6b61fa009d1c4b777/pyobjus-1.2.4-cp314-cp314-ios_13_0_arm64_iphonesimulator.whl", hash = "sha256:369a509de7ef951284ea448654c1b8c532fe22c2a29704a0e1636aa087df3463", size = 289512, upload-time = "2025-12-29T14:48:15.325Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/7d/3c2e4f7579176c90faf22efda6840fc4f87d9486bb2e2889320fc7989241/pyobjus-1.2.4-cp314-cp314-ios_13_0_x86_64_iphonesimulator.whl", hash = "sha256:e729ecca4e37429a9b00148853e73dc36c413b415086060722fa3d7fe58ede4a", size = 303774, upload-time = "2025-12-29T14:48:16.234Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/d5/0591cb8e3441b2ecaf68db91ea9b2aad10a5376b11136b69cd3498456632/pyobjus-1.2.4-cp314-cp314-macosx_10_15_universal2.whl", hash = "sha256:ef95271d1ec30d4ae61a4f6a66e6fcbf2e41e2420c3fcde5062acc6545565e3d", size = 526356, upload-time = "2025-12-29T14:48:17.155Z" },
 ]
 
 [[package]]
@@ -675,6 +703,8 @@ dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pillow" },
+    { name = "plyer" },
+    { name = "pyobjus" },
     { name = "pyserial" },
     { name = "sigfig" },
     { name = "toml" },
@@ -690,6 +720,8 @@ requires-dist = [
     { name = "kivy", specifier = ">=2.3.1" },
     { name = "numpy", specifier = ">=2.2.6" },
     { name = "pillow", specifier = ">=12.1.0" },
+    { name = "plyer", specifier = ">=2.1.0" },
+    { name = "pyobjus", specifier = ">=1.2.4" },
     { name = "pyserial", specifier = ">=3.5" },
     { name = "sigfig", specifier = ">=1.3.19" },
     { name = "toml", specifier = ">=0.10.2" },

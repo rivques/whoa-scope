@@ -1301,9 +1301,7 @@
                     source: kivy_resources.resource_find('save.png')
                     size_hint_y: 1 / 9
                     tooltip_text: 'Save Scope Trace to CSV'
-                    on_release:
-                        app.save_dialog_visible = True
-                        Factory.ScopeSaveDialog().open()
+                    on_release: app.open_save_waveform_dialog()
 
                 ImageButton:
                     id: play_pause_button
@@ -1788,9 +1786,7 @@
                     source: kivy_resources.resource_find('save.png')
                     size_hint_y: 1 / 9
                     tooltip_text: 'Save Bode Plot Data to CSV'
-                    on_release:
-                        app.save_dialog_visible = True
-                        Factory.BodeSaveDialog().open()
+                    on_release: app.open_save_bode_dialog()
 
                 ImageButton:
                     id: play_stop_button
