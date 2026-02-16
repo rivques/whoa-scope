@@ -39,6 +39,9 @@ from kivy.factory import Factory
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.utils import platform
+from kivy.metrics import dp
+
+from plyer import filechooser
 
 import numpy as np
 import sigfig
@@ -589,6 +592,14 @@ class LinearSlider(BoxLayout):
     label_text = StringProperty('')
     units = StringProperty('')
 
+    def update_value_from_text(self, text):
+        """Safely updates the slider value from text input. You never know if an error arises!"""
+        try:
+            new_val = float(text)
+            self.value = max(self.minimum, min(self.maximum, new_val))
+        except ValueError:
+            pass
+
 class LogarithmicSlider(BoxLayout):
 
     minimum = NumericProperty(1.)
@@ -597,6 +608,14 @@ class LogarithmicSlider(BoxLayout):
     value = NumericProperty()
     label_text = StringProperty('')
     units = StringProperty('')
+
+    def update_value_from_text(self, text):
+        """Safely updates the slider value from text input. You never know if an error arises!"""
+        try:
+            new_val = float(text)
+            self.value = max(self.minimum, min(self.maximum, new_val))
+        except ValueError:
+            pass
 
     def nearest_one_two_five(self, x):
         exponent = math.floor(x)
@@ -1764,7 +1783,7 @@ class WavegenPlot(Plot):
 
     def draw_background(self):
         self.canvas.add(Color(*get_color_from_hex(self.canvas_background_color + 'CD')))
-#        self.canvas.add(Rectangle(pos = [self.canvas_left, self.canvas_bottom], size = [self.canvas_width, self.canvas_height]))
+        #  self.canvas.add(Rectangle(pos = [self.canvas_left, self.canvas_bottom], size = [self.canvas_width, self.canvas_height]))
         self.canvas.add(Rectangle(pos = [self.canvas_left, self.canvas_bottom], size = [self.canvas_width, self.axes_bottom - self.canvas_bottom]))
         self.canvas.add(Rectangle(pos = [self.canvas_left, self.axes_top], size = [self.canvas_width, self.canvas_bottom + self.canvas_height - self.axes_top]))
         self.canvas.add(Rectangle(pos = [self.canvas_left, self.axes_bottom], size = [self.axes_left - self.canvas_left, self.axes_height]))
@@ -1856,54 +1875,44 @@ class WavegenPlot(Plot):
         self.update_preview()
         self.refresh_plot()
 
-    def decrease_frequency(self):
-        foo = math.log10(self.frequency)
-        bar = math.floor(foo)
-        foobar = foo - bar
-        if foobar < 0.5 * math.log10(2.001):
-            self.frequency = 0.5 * math.pow(10., bar)
-        elif foobar < 0.5 * math.log10(2.001 * 5.001):
-            self.frequency = math.pow(10., bar)
-        elif foobar < 0.5 * math.log10(5.001 * 10.001):
-            self.frequency = 2. * math.pow(10., bar)
-        else:
-            self.frequency = 5. * math.pow(10., bar)
+    def increase_frequency(self):
+        app = App.get_running_app()
+        if self.frequency >= self.MAX_FREQUENCY:
+            return
 
-        if self.frequency < self.MIN_FREQUENCY:
-            self.frequency = self.MIN_FREQUENCY
-        if self.frequency > self.MAX_FREQUENCY:
-            self.frequency = self.MAX_FREQUENCY
+        log_f = math.log10(max(self.frequency, 1e-10))
+        log_f += app.wavegen_snap_step
+        
+        snapped_log = app.nearest_one_two_five(log_f)
+        new_freq = 10 ** snapped_log
+
+        self.frequency = min(max(new_freq, self.MIN_FREQUENCY), self.MAX_FREQUENCY)
 
         self.xlim = [0., 1. / self.frequency]
         self.xmin = self.xlim[0]
         self.xmax = self.xlim[1]
-
+        
         app.root.scope.set_frequency(self.frequency)
         self.update_preview()
         self.refresh_plot()
 
-    def increase_frequency(self):
-        foo = math.log10(self.frequency)
-        bar = math.floor(foo)
-        foobar = foo - bar
-        if foobar < 0.5 * math.log10(2.001):
-            self.frequency = 2. * math.pow(10., bar)
-        elif foobar < 0.5 * math.log10(2.001 * 5.001):
-            self.frequency = 5. * math.pow(10., bar)
-        elif foobar < 0.5 * math.log10(5.001 * 10.001):
-            self.frequency = 10. * math.pow(10., bar)
-        else:
-            self.frequency = 20. * math.pow(10., bar)
+    def decrease_frequency(self):
+        app = App.get_running_app()
+        if self.frequency <= self.MIN_FREQUENCY:
+            return
 
-        if self.frequency < self.MIN_FREQUENCY:
-            self.frequency = self.MIN_FREQUENCY
-        if self.frequency > self.MAX_FREQUENCY:
-            self.frequency = self.MAX_FREQUENCY
+        log_f = math.log10(max(self.frequency, 1e-10))
+        log_f -= app.wavegen_snap_step
+        
+        snapped_log = app.nearest_one_two_five(log_f)
+        new_freq = 10 ** snapped_log
+
+        self.frequency = min(max(new_freq, self.MIN_FREQUENCY), self.MAX_FREQUENCY)
 
         self.xlim = [0., 1. / self.frequency]
         self.xmin = self.xlim[0]
         self.xmax = self.xlim[1]
-
+        
         app.root.scope.set_frequency(self.frequency)
         self.update_preview()
         self.refresh_plot()
@@ -1934,13 +1943,20 @@ class WavegenPlot(Plot):
         if (self.num_touches == 1) and ((touch.pos[0] - self.axes_left) ** 2 + (touch.pos[1] - self.to_canvas_y(self.offset)) ** 2 <= self.CONTROL_PT_THRESHOLD ** 2):
             self.looking_for_gesture = False
             self.dragging_offset_control_pt = True
+            self.drag_start_offset = self.offset
         elif (self.shape != 'DC') and ((touch.pos[0] - self.to_canvas_x(0.25 / self.frequency)) ** 2 + (touch.pos[1] - self.to_canvas_y(self.offset + self.amplitude)) ** 2 <= self.CONTROL_PT_THRESHOLD ** 2):
             if self.num_touches == 1:
                 self.looking_for_gesture = False
                 self.dragging_amp_control_pt = True
+                self.drag_start_amplitude = self.amplitude
+                self.drag_start_frequency = self.frequency
+                self.drag_start_offset = self.offset
             elif self.num_touches == 2:
                 self.looking_for_gesture = False
                 self.dragging_amp_control_pt_h_xor_v = True
+                self.drag_start_amplitude = self.amplitude
+                self.drag_start_frequency = self.frequency
+                self.drag_start_offset = self.offset
 
     def on_touch_move(self, touch):
         if not app.root.scope.wavegen_visible:
@@ -1958,8 +1974,19 @@ class WavegenPlot(Plot):
         except ValueError:
             return
 
+        # Use the dynamic step size from the app settings
+        step = app.wavegen_snap_step
+        snap_enabled = app.root.scope.wavegen_snap_button.state == 'down'
+
         if self.dragging_offset_control_pt and (i == 0):
-            self.offset = self.from_canvas_y(self.to_canvas_y(self.offset) + touch.pos[1] - self.touch_positions[i][1])
+            dy = self.touch_net_movements[i][1] + (touch.pos[1] - self.touch_positions[i][1])
+            val = self.from_canvas_y(self.to_canvas_y(self.drag_start_offset) + dy)
+            
+            if snap_enabled:
+                self.offset = round(val / step) * step
+            else:
+                self.offset = val
+                
             if self.offset < self.MIN_OFFSET:
                 self.offset = self.MIN_OFFSET
             if self.offset > self.MAX_OFFSET:
@@ -1969,21 +1996,39 @@ class WavegenPlot(Plot):
             self.refresh_plot()
 
         if self.dragging_amp_control_pt and (i == 0):
-            self.amplitude = self.from_canvas_y(self.to_canvas_y(self.offset + self.amplitude) + touch.pos[1] - self.touch_positions[i][1]) - self.offset
+            # Vertical move for amplitude
+            dy = self.touch_net_movements[i][1] + (touch.pos[1] - self.touch_positions[i][1])
+            start_y_canvas = self.to_canvas_y(self.drag_start_offset + self.drag_start_amplitude)
+            val_total = self.from_canvas_y(start_y_canvas + dy)
+            val_amp = val_total - self.offset
+            
+            if snap_enabled:
+                self.amplitude = round(val_amp / step) * step
+            else:
+                self.amplitude = val_amp
+
             if self.amplitude < self.MIN_AMPLITUDE:
                 self.amplitude = self.MIN_AMPLITUDE
             if self.amplitude > self.MAX_AMPLITUDE:
                 self.amplitude = self.MAX_AMPLITUDE
-            t_peak = self.from_canvas_x(self.to_canvas_x(0.25 / self.frequency) + touch.pos[0] - self.touch_positions[i][0])
+            
+            # Horizontal move for frequency
+            dx = self.touch_net_movements[i][0] + (touch.pos[0] - self.touch_positions[i][0])
+            start_x_canvas = self.to_canvas_x(0.25 / self.drag_start_frequency)
+            t_peak = self.from_canvas_x(start_x_canvas + dx)
+            
             if t_peak < 0.025 * self.xlim[1]:
                 t_peak = 0.025 * self.xlim[1]
             if t_peak > self.xlim[1]:
                 t_peak = self.xlim[1]
+            
+            # Continuous adjustment if snapping is disabled.
             self.frequency = 0.25 / t_peak
             if self.frequency < self.MIN_FREQUENCY:
                 self.frequency = self.MIN_FREQUENCY
             if self.frequency > self.MAX_FREQUENCY:
                 self.frequency = self.MAX_FREQUENCY
+            
             app.root.scope.set_amplitude(self.amplitude)
             app.root.scope.set_frequency(self.frequency)
             self.update_preview()
@@ -1998,14 +2043,26 @@ class WavegenPlot(Plot):
                 else:
                     self.drag_direction = 'VERTICAL'
             if self.drag_direction == 'VERTICAL':
-                self.amplitude = self.from_canvas_y(self.to_canvas_y(self.offset + self.amplitude) + touch.pos[1] - self.touch_positions[i][1]) - self.offset
+                dy = self.touch_net_movements[i][1] + (touch.pos[1] - self.touch_positions[i][1])
+                start_y_canvas = self.to_canvas_y(self.drag_start_offset + self.drag_start_amplitude)
+                val_total = self.from_canvas_y(start_y_canvas + dy)
+                val_amp = val_total - self.offset
+                
+                if snap_enabled:
+                    self.amplitude = round(val_amp / step) * step
+                else:
+                    self.amplitude = val_amp
+                    
                 if self.amplitude < self.MIN_AMPLITUDE:
                     self.amplitude = self.MIN_AMPLITUDE
                 if self.amplitude > self.MAX_AMPLITUDE:
                     self.amplitude = self.MAX_AMPLITUDE
                 app.root.scope.set_amplitude(self.amplitude)
             else:
-                t_peak = self.from_canvas_x(self.to_canvas_x(0.25 / self.frequency) + touch.pos[0] - self.touch_positions[i][0])
+                dx = self.touch_net_movements[i][0] + (touch.pos[0] - self.touch_positions[i][0])
+                start_x_canvas = self.to_canvas_x(0.25 / self.drag_start_frequency)
+                t_peak = self.from_canvas_x(start_x_canvas + dx)
+
                 if t_peak < 0.025 * self.xlim[1]:
                     t_peak = 0.025 * self.xlim[1]
                 if t_peak > self.xlim[1]:
@@ -2018,10 +2075,6 @@ class WavegenPlot(Plot):
                 app.root.scope.set_frequency(self.frequency)
             self.update_preview()
             self.refresh_plot()
-
-        self.touch_net_movements[i][0] += touch.pos[0] - self.touch_positions[i][0]
-        self.touch_net_movements[i][1] += touch.pos[1] - self.touch_positions[i][1]
-        self.touch_positions[i] = touch.pos
 
     def on_touch_up(self, touch):
         if not app.root.scope.wavegen_visible:
@@ -3789,6 +3842,9 @@ class MainApp(App):
     # Color theme property
     color_theme = StringProperty('default')
 
+    # Snap step thing (i dont know where to put it)
+    wavegen_snap_step = NumericProperty(0.5)
+
     def __init__(self, **kwargs):
         super(MainApp, self).__init__(**kwargs)
         # Settings manager already initialized at module load time for font config
@@ -4177,6 +4233,22 @@ class MainApp(App):
         ok_btn.bind(on_release=on_ok)
         
         popup.open()
+
+    # yes this is in the wrong place
+    # no, i will not move it
+    def nearest_one_two_five(self, x):
+        exponent = math.floor(x)
+        mantissa = x - exponent
+        if mantissa < math.log10(math.sqrt(2.)):
+            mantissa = 0.
+        elif mantissa < math.log10(math.sqrt(10.)):
+            mantissa = math.log10(2.)
+        elif mantissa < math.log10(math.sqrt(50.)):
+            mantissa = math.log10(5.)
+        else:
+            mantissa = 0.
+            exponent += 1.
+        return exponent + mantissa
     
     def get_settings_directory(self):
         """Get the settings directory path for display."""
@@ -4282,71 +4354,84 @@ class MainApp(App):
         else:
             return pathlib.Path(selection).name
 
-    def export_waveforms(self, path, filename, overwrite_existing_file = False):
-        self.save_dialog_path = path
-        self.save_dialog_file = None
+    def open_save_waveform_dialog(self):
+        filechooser.save_file(
+            on_selection=self._on_waveform_save_selection,
+            title="Save Waveforms",
+            filters=[("CSV Files", "*.csv"), ("Text Files", "*.txt")]
+        )
 
-        if filename == '':
+    def _on_waveform_save_selection(self, selection):
+        if selection:
+            # selection is a list, so take only the first item
+            self.export_waveforms(selection[0])
+
+    def open_save_bode_dialog(self):
+        filechooser.save_file(
+            on_selection=self._on_bode_save_selection,
+            title="Save Frequency Response",
+            filters=[("CSV Files", "*.csv"), ("Text Files", "*.txt")]
+        )
+
+    def _on_bode_save_selection(self, selection):
+        if selection:
+            self.export_freqresp(selection[0])
+
+    def export_waveforms(self, filepath):
+        if not filepath:
             return
 
-        if os.path.exists(os.path.join(path, filename)) and not overwrite_existing_file:
-            self.save_dialog_file = filename
-            Factory.FileExistsAlert().open()
-            return
+        # Ensure correct extension if missing
+        if not (filepath.lower().endswith('.csv') or filepath.lower().endswith('.txt')):
+            filepath += '.csv'
 
         try:
-            outfile = open(os.path.join(path, filename), 'w')
-        except:
+            with open(filepath, 'w') as outfile:
+                if filepath.lower().endswith('.txt'):
+                    outfile.write('t1\tch1\tt2\tch2\n')
+                    sep = '\t'
+                else:
+                    outfile.write('t1,ch1,t2,ch2\n')
+                    sep = ','
+
+                # Access plot data directly
+                curve_ch1 = self.root.scope.scope_plot.curves['CH1']
+                curve_ch2 = self.root.scope.scope_plot.curves['CH2']
+
+                for i in range(len(curve_ch1.points_x)):
+                    for j in range(len(curve_ch1.points_x[i])):
+                        line = f'{curve_ch1.points_x[i][j]}{sep}'
+                        line += f'{curve_ch1.points_y[i][j]}{sep}'
+                        line += f'{curve_ch2.points_x[i][j]}{sep}'
+                        line += f'{curve_ch2.points_y[i][j]}\n'
+                        outfile.write(line)
+        except Exception as e:
+            print(f"Error saving waveforms: {e}")
+
+    def export_freqresp(self, filepath):
+        if not filepath:
             return
 
-        if filename[-4:] == '.txt' or filename[-4:] == '.TXT':
-            outfile.write('t1\tch1\tt2\tch2\n')
-            sep = '\t'
-        else:
-            outfile.write('t1,ch1,t2,ch2\n')
-            sep = ','
-
-        for i in range(len(self.root.scope.scope_plot.curves['CH1'].points_x)):
-            for j in range(len(self.root.scope.scope_plot.curves['CH1'].points_x[i])):
-                line = '{!s}{!s}'.format(self.root.scope.scope_plot.curves['CH1'].points_x[i][j], sep)
-                line += '{!s}{!s}'.format(self.root.scope.scope_plot.curves['CH1'].points_y[i][j], sep)
-                line += '{!s}{!s}'.format(self.root.scope.scope_plot.curves['CH2'].points_x[i][j], sep)
-                line += '{!s}\n'.format(self.root.scope.scope_plot.curves['CH2'].points_y[i][j])
-                outfile.write(line)
-
-        outfile.close()
-
-    def export_freqresp(self, path, filename, overwrite_existing_file = False):
-        self.save_dialog_path = path
-        self.save_dialog_file = None
-
-        if filename == '':
-            return
-
-        if os.path.exists(os.path.join(path, filename)) and not overwrite_existing_file:
-            self.save_dialog_file = filename
-            Factory.FileExistsAlert().open()
-            return
+        if not (filepath.lower().endswith('.csv') or filepath.lower().endswith('.txt')):
+            filepath += '.csv'
 
         try:
-            outfile = open(os.path.join(path, filename), 'w')
-        except:
-            return
+            with open(filepath, 'w') as outfile:
+                if filepath.lower().endswith('.txt'):
+                    outfile.write('freq\tgain\tphase\n')
+                    sep = '\t'
+                else:
+                    outfile.write('freq,gain,phase\n')
+                    sep = ','
 
-        if filename[-4:] == '.txt' or filename[-4:] == '.TXT':
-            outfile.write('freq\tgain\tphase\n')
-            sep = '\t'
-        else:
-            outfile.write('freq,gain,phase\n')
-            sep = ','
-
-        for i in range(len(self.root.bode.freq)):
-            line = '{!s}{!s}'.format(self.root.bode.freq[i], sep)
-            line += '{!s}{!s}'.format(self.root.bode.gain[i], sep)
-            line += '{!s}\n'.format(self.root.bode.phase[i])
-            outfile.write(line)
-
-        outfile.close()
+                bode_root = self.root.bode
+                for i in range(len(bode_root.freq)):
+                    line = f'{bode_root.freq[i]}{sep}'
+                    line += f'{bode_root.gain[i]}{sep}'
+                    line += f'{bode_root.phase[i]}\n'
+                    outfile.write(line)
+        except Exception as e:
+            print(f"Error saving frequency response: {e}")
 
     def load_offset_waveform(self, path, filename):
         if not self.dev.connected:
@@ -4377,4 +4462,3 @@ if __name__ == '__main__':
     app = MainApp()
     oscope.app = app
     app.run()
-

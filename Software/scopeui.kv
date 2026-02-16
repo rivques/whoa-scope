@@ -315,7 +315,7 @@
         BoxLayout:
             orientation: 'vertical'
             size_hint_y: None
-            height: 130
+            height: 200
             
             Label:
                 text: '[b]Display Settings[/b]'
@@ -360,8 +360,9 @@
             BoxLayout:
                 orientation: 'horizontal'
                 size_hint_y: None
-                height: 40
+                height: 50
                 spacing: 10
+                padding: [0, 4, 0, 4]
                 
                 Label:
                     text: 'Text Scale:'
@@ -393,8 +394,9 @@
             BoxLayout:
                 orientation: 'horizontal'
                 size_hint_y: None
-                height: 40
+                height: 50
                 spacing: 10
+                padding: [0, 4, 0, 4]
                 
                 Label:
                     text: 'Tooltip Delay:'
@@ -415,6 +417,40 @@
                 
                 Label:
                     text: str(round(tooltip_delay_slider.value, 1)) + ' seconds'
+                    font_size: int(14 * app.fontscale)
+                    size_hint_x: 0.3
+                    color: 0.6, 0.6, 0.6, 1
+                    halign: 'left'
+                    text_size: self.size
+                    valign: 'middle'
+
+            # step size setting
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: 50
+                spacing: 10
+                padding: [0, 4, 0, 4]
+                
+                Label:
+                    text: 'Wavegen Snap:'
+                    font_size: int(16 * app.fontscale)
+                    size_hint_x: 0.2
+                    halign: 'right'
+                    text_size: self.size
+                    valign: 'middle'
+                
+                Slider:
+                    id: wavegen_snap_slider
+                    min: 0.1
+                    max: 2.0
+                    step: 0.01
+                    value: app.wavegen_snap_step
+                    size_hint_x: 0.5
+                    on_value: app.wavegen_snap_step = self.value
+                
+                Label:
+                    text: str(round(wavegen_snap_slider.value, 2)) + ' V'
                     font_size: int(14 * app.fontscale)
                     size_hint_x: 0.3
                     color: 0.6, 0.6, 0.6, 1
@@ -796,15 +832,28 @@
             slider.step = root.step if self.state == 'down' else 0.
             slider.value = root.minimum + root.step * round((slider.value - root.minimum) / root.step) if self.state == 'down' else slider.value
 
-    Label:
-        size_hint_x: 0.1
-        text: root.label_text + app.num2str(root.value, 4) + root.units
-        font_size: int(18 * app.fontscale)
-        halign: 'center'
+    BoxLayout:
+        size_hint_x: 0.25
+        orientation: 'horizontal'
+        Label:
+            text: root.label_text
+            size_hint_x: 0.3
+            font_size: int(14 * app.fontscale)
+        TextInput:
+            text: app.num2str(root.value, 4)
+            size_hint_x: 0.45
+            multiline: False
+            font_size: int(16 * app.fontscale)
+            halign: 'center'
+            on_text_validate: root.update_value_from_text(self.text)
+        Label:
+            text: root.units
+            size_hint_x: 0.25
+            font_size: int(14 * app.fontscale)
 
     Slider:
         id: slider
-        size_hint_x: 0.8
+        size_hint_x: 0.65
         orientation: 'horizontal'
         min: root.minimum
         max: root.maximum
@@ -827,15 +876,28 @@
             slider.step = 1/3 if self.state == 'down' else 0.
             slider.value = root.nearest_one_two_five(slider.value) if snap_button.state == 'down' else slider.value
 
-    Label:
-        size_hint_x: 0.1
-        text: root.label_text + app.num2str(root.value, 4) + root.units
-        font_size: int(18 * app.fontscale)
-        halign: 'center'
+    BoxLayout:
+        size_hint_x: 0.25
+        orientation: 'horizontal'
+        Label:
+            text: root.label_text
+            size_hint_x: 0.3
+            font_size: int(14 * app.fontscale)
+        TextInput:
+            text: app.num2str(root.value, 4)
+            size_hint_x: 0.45
+            multiline: False
+            font_size: int(16 * app.fontscale)
+            halign: 'center'
+            on_text_validate: root.update_value_from_text(self.text)
+        Label:
+            text: root.units
+            size_hint_x: 0.25
+            font_size: int(14 * app.fontscale)
 
     Slider:
         id: slider
-        size_hint_x: 0.8
+        size_hint_x: 0.65
         orientation: 'horizontal'
         min: math.log10(root.minimum)
         max: math.log10(root.maximum)
@@ -1182,6 +1244,7 @@
     xy_v_cursors_button: xy_v_cursors_button
     wavegen: wavegen
     wavegen_plot: wavegen_plot
+    wavegen_snap_button: wavegen_snap_button
     dc_button: dc_button
     sin_button: sin_button
     square_button: square_button
@@ -1301,9 +1364,7 @@
                     source: kivy_resources.resource_find('save.png')
                     size_hint_y: 1 / 9
                     tooltip_text: 'Save Scope Trace to CSV'
-                    on_release:
-                        app.save_dialog_visible = True
-                        Factory.ScopeSaveDialog().open()
+                    on_release: app.open_save_waveform_dialog()
 
                 ImageButton:
                     id: play_pause_button
@@ -1515,9 +1576,17 @@
                     on_release: root.sync_scope_to_wavegen()
                     tooltip_text: 'Sync scope view and sampling rate to match wavegen period'
 
+                ImageToggleButton:
+                    id: wavegen_snap_button
+                    # How in the world is there a magnet icon???
+                    source: kivy_resources.resource_find('magnet_alt.png')
+                    size_hint_y: 1 / 9
+                    state: 'down'
+                    tooltip_text: 'Toggle Wavegen Snapping'
+                
                 Slider:
                     id: offset_adj_slider
-                    size_hint_y: 3 / 9
+                    size_hint_y: 2 / 9
                     orientation: 'vertical'
                     value: 512
                     min: 0
@@ -1788,9 +1857,7 @@
                     source: kivy_resources.resource_find('save.png')
                     size_hint_y: 1 / 9
                     tooltip_text: 'Save Bode Plot Data to CSV'
-                    on_release:
-                        app.save_dialog_visible = True
-                        Factory.BodeSaveDialog().open()
+                    on_release: app.open_save_bode_dialog()
 
                 ImageButton:
                     id: play_stop_button
